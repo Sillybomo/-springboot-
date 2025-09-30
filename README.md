@@ -1,0 +1,2 @@
+# -springboot-
+项目技术：Vue+Spring+SpringMVC+MyBatis+Mysql+Ajax+deepseek 项目介绍：该项目是一个基于Springboot框架的智能旅游订票系统项目；项目前端使用Vue面向用户，通过展示各个景点的信息以及票价，供用户进行选择和下单支付，完成整个购票流程，并且集成小型的deepseekAI模型提供为用户解答服务。后端模块化设计，便于扩展和维护，前端模糊搜索 + 后端分页查询设计，完善搜索服务。
