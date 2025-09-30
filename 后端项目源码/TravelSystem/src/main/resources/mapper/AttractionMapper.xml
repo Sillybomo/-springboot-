@@ -1,0 +1,509 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.AttractionMapper">
+
+	<!-- 实体类与数据库字段映射配置 -->
+	<resultMap id="base_result_map" type="com.entity.po.Attraction">
+		<!--  -->
+		<id property="id" column="id" />
+		<!--  -->
+		<result property="name" column="name" />
+		<!--  -->
+		<result property="city" column="city" />
+		<!--  -->
+		<result property="province" column="province" />
+		<!--  -->
+		<result property="description" column="description" />
+		<!--  -->
+		<result property="openingHours" column="opening_hours" />
+		<!--  -->
+		<result property="address" column="address" />
+		<!--  -->
+		<result property="rating" column="rating" />
+		<!--  -->
+		<result property="imageUrl" column="image_url" />
+		<!--  -->
+		<result property="createdAt" column="created_at" />
+		<!--  -->
+		<result property="updatedAt" column="updated_at" />
+	</resultMap>
+
+	<!--通用查询列-->
+	<sql id="base_column_list">
+		id,name,city,province,description,opening_hours,address,rating,image_url,created_at,updated_at
+	</sql>
+
+	<!--通用查询条件-->
+	<sql id="base_query_condition">
+		<if test="query.id != null">
+			and id = #{query.id}
+		</if>
+		<if test="query.name != null and query.name != ''">
+			and name = #{query.name}
+		</if>
+		<if test="query.city != null and query.city != ''">
+			and city = #{query.city}
+		</if>
+		<if test="query.province != null and query.province != ''">
+			and province = #{query.province}
+		</if>
+		<if test="query.description != null and query.description != ''">
+			and description = #{query.description}
+		</if>
+		<if test="query.openingHours != null and query.openingHours != ''">
+			and opening_hours = #{query.openingHours}
+		</if>
+		<if test="query.address != null and query.address != ''">
+			and address = #{query.address}
+		</if>
+		<if test="query.rating != null">
+			and rating = #{query.rating}
+		</if>
+		<if test="query.imageUrl != null and query.imageUrl != ''">
+			and image_url = #{query.imageUrl}
+		</if>
+		<if test="query.createdAt != null">
+			and created_at = #{query.createdAt}
+		</if>
+		<if test="query.updatedAt != null">
+			and updated_at = #{query.updatedAt}
+		</if>
+	</sql>
+
+	<!--扩展查询条件-->
+	<sql id="base_query_condition_extend">
+		<if test="query.nameFuzzy != null and query.nameFuzzy != ''">
+			and name
+			like concat('%',#{query.nameFuzzy},'%')
+		</if>
+		<if test="query.cityFuzzy != null and query.cityFuzzy != ''">
+			and city
+			like concat('%',#{query.cityFuzzy},'%')
+		</if>
+		<if test="query.provinceFuzzy != null and query.provinceFuzzy != ''">
+			and province
+			like concat('%',#{query.provinceFuzzy},'%')
+		</if>
+		<if test="query.descriptionFuzzy != null and query.descriptionFuzzy != ''">
+			and description
+			like concat('%',#{query.descriptionFuzzy},'%')
+		</if>
+		<if test="query.openingHoursFuzzy != null and query.openingHoursFuzzy != ''">
+			and opening_hours
+			like concat('%',#{query.openingHoursFuzzy},'%')
+		</if>
+		<if test="query.addressFuzzy != null and query.addressFuzzy != ''">
+			and address
+			like concat('%',#{query.addressFuzzy},'%')
+		</if>
+		<if test="query.imageUrlFuzzy != null and query.imageUrlFuzzy != ''">
+			and image_url
+			like concat('%',#{query.imageUrlFuzzy},'%')
+		</if>
+		<if test="query.createdAtStart != null and query.createdAtStart != ''">
+			<![CDATA[ and created_at >= str_to_date(#{query.createdAtStart} ,'%Y-%m-%d')]]>
+		</if>
+		<if test="query.createdAtEnd != null and query.createdAtEnd != ''">
+			<![CDATA[ and created_at < date_sub(str_to_date(#{query.createdAtEnd} ,'%Y-%m-%d'),interval -1 day)]]>
+		</if>
+		<if test="query.updatedAtStart != null and query.updatedAtStart != ''">
+			<![CDATA[ and updated_at >= str_to_date(#{query.updatedAtStart} ,'%Y-%m-%d')]]>
+		</if>
+		<if test="query.updatedAtEnd != null and query.updatedAtEnd != ''">
+			<![CDATA[ and updated_at < date_sub(str_to_date(#{query.updatedAtEnd} ,'%Y-%m-%d'),interval -1 day)]]>
+		</if>
+	</sql>
+
+	<!--包含通用查询条件-->
+	<sql id="query_condition">
+		<where>
+			<include refid = "base_query_condition"/>
+			<include refid = "base_query_condition_extend"/>
+		</where>
+	</sql>
+
+	<!--查询列表-->
+	<select id="selectByParams" resultMap="base_result_map">
+		select
+		<include refid="base_column_list"/>
+		from t_attraction
+		<include refid="query_condition"/>
+		<if test="query.orderBy != null">
+			order by ${query.orderBy}
+		</if>
+		<if test="query.simplePage != null">
+			limit #{query.simplePage.offset},#{query.simplePage.pageSize}
+		</if>
+	</select>
+
+	<!--查询数量-->
+	<select id="selectCountByCollection" resultType="java.lang.Long">
+		select count(1)
+		from t_attraction
+		<include refid="query_condition"/>
+	</select>
+
+	<!--插入-->
+	<insert id="insertEntity" parameterType="com.entity.po.Attraction" useGeneratedKeys="true">
+		<selectKey keyProperty="bean.id" resultType="Long" order="AFTER">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO t_attraction
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.name != null">
+				name,
+			</if>
+			<if test="bean.city != null">
+				city,
+			</if>
+			<if test="bean.province != null">
+				province,
+			</if>
+			<if test="bean.description != null">
+				description,
+			</if>
+			<if test="bean.openingHours != null">
+				opening_hours,
+			</if>
+			<if test="bean.address != null">
+				address,
+			</if>
+			<if test="bean.rating != null">
+				rating,
+			</if>
+			<if test="bean.imageUrl != null">
+				image_url,
+			</if>
+			<if test="bean.createdAt != null">
+				created_at,
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at,
+			</if>
+		</trim>
+		VALUES
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.name != null">
+				#{bean.name},
+			</if>
+			<if test="bean.city != null">
+				#{bean.city},
+			</if>
+			<if test="bean.province != null">
+				#{bean.province},
+			</if>
+			<if test="bean.description != null">
+				#{bean.description},
+			</if>
+			<if test="bean.openingHours != null">
+				#{bean.openingHours},
+			</if>
+			<if test="bean.address != null">
+				#{bean.address},
+			</if>
+			<if test="bean.rating != null">
+				#{bean.rating},
+			</if>
+			<if test="bean.imageUrl != null">
+				#{bean.imageUrl},
+			</if>
+			<if test="bean.createdAt != null">
+				#{bean.createdAt},
+			</if>
+			<if test="bean.updatedAt != null">
+				#{bean.updatedAt},
+			</if>
+		</trim>
+	</insert>
+
+	<!-- 插入或更新(自动处理唯一键冲突) -->
+	<insert id="insertOrUpdate" parameterType="com.entity.po.Attraction" useGeneratedKeys="true" >
+		INSERT INTO t_attraction
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.id != null">
+				id,
+			</if>
+			<if test="bean.name != null">
+				name,
+			</if>
+			<if test="bean.city != null">
+				city,
+			</if>
+			<if test="bean.province != null">
+				province,
+			</if>
+			<if test="bean.description != null">
+				description,
+			</if>
+			<if test="bean.openingHours != null">
+				opening_hours,
+			</if>
+			<if test="bean.address != null">
+				address,
+			</if>
+			<if test="bean.rating != null">
+				rating,
+			</if>
+			<if test="bean.imageUrl != null">
+				image_url,
+			</if>
+			<if test="bean.createdAt != null">
+				created_at,
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at,
+			</if>
+		</trim>
+
+		<trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+			<if test="bean.id != null">
+				#{bean.id},
+			</if>
+			<if test="bean.name != null">
+				#{bean.name},
+			</if>
+			<if test="bean.city != null">
+				#{bean.city},
+			</if>
+			<if test="bean.province != null">
+				#{bean.province},
+			</if>
+			<if test="bean.description != null">
+				#{bean.description},
+			</if>
+			<if test="bean.openingHours != null">
+				#{bean.openingHours},
+			</if>
+			<if test="bean.address != null">
+				#{bean.address},
+			</if>
+			<if test="bean.rating != null">
+				#{bean.rating},
+			</if>
+			<if test="bean.imageUrl != null">
+				#{bean.imageUrl},
+			</if>
+			<if test="bean.createdAt != null">
+				#{bean.createdAt},
+			</if>
+			<if test="bean.updatedAt != null">
+				#{bean.updatedAt},
+			</if>
+		</trim>
+
+		ON DUPLICATE KEY UPDATE
+		<trim suffixOverrides=",">
+			<if test="bean.name != null">
+				name = VALUES(name),
+			</if>
+			<if test="bean.city != null">
+				city = VALUES(city),
+			</if>
+			<if test="bean.province != null">
+				province = VALUES(province),
+			</if>
+			<if test="bean.description != null">
+				description = VALUES(description),
+			</if>
+			<if test="bean.openingHours != null">
+				opening_hours = VALUES(opening_hours),
+			</if>
+			<if test="bean.address != null">
+				address = VALUES(address),
+			</if>
+			<if test="bean.rating != null">
+				rating = VALUES(rating),
+			</if>
+			<if test="bean.imageUrl != null">
+				image_url = VALUES(image_url),
+			</if>
+			<if test="bean.createdAt != null">
+				created_at = VALUES(created_at),
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at = VALUES(updated_at),
+			</if>
+		</trim>
+	</insert>
+
+	<!-- 批量插入（推荐单批次数据量控制在500条以内） -->
+	<insert id="insertBatch" parameterType="com.entity.po.Attraction">
+		INSERT INTO t_attraction
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			name,	<!--  -->
+			city,	<!--  -->
+			province,	<!--  -->
+			description,	<!--  -->
+			opening_hours,	<!--  -->
+			address,	<!--  -->
+			rating,	<!--  -->
+			image_url,	<!--  -->
+			created_at,	<!--  -->
+			updated_at,	<!--  -->
+		</trim>
+		VALUES
+		<foreach collection="list" item="item" separator=",">
+			<trim prefix="(" suffix=")" suffixOverrides=",">
+				#{item.name},
+				#{item.city},
+				#{item.province},
+				#{item.description},
+				#{item.openingHours},
+				#{item.address},
+				#{item.rating},
+				#{item.imageUrl},
+				#{item.createdAt},
+				#{item.updatedAt},
+			</trim>
+		</foreach>
+	</insert>
+
+	<!-- 批量插入或修改（推荐单批次数据量控制在500条以内） -->
+	<insert id="insertOrUpdateBatch" parameterType="com.entity.po.Attraction">
+		INSERT INTO t_attraction
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			id,	<!--  -->
+			name,	<!--  -->
+			city,	<!--  -->
+			province,	<!--  -->
+			description,	<!--  -->
+			opening_hours,	<!--  -->
+			address,	<!--  -->
+			rating,	<!--  -->
+			image_url,	<!--  -->
+			created_at,	<!--  -->
+			updated_at,	<!--  -->
+		</trim>
+		VALUES
+		<foreach collection="list" item="item" separator=",">
+			<trim prefix="(" suffix=")" suffixOverrides=",">
+				#{item.id},
+				#{item.name},
+				#{item.city},
+				#{item.province},
+				#{item.description},
+				#{item.openingHours},
+				#{item.address},
+				#{item.rating},
+				#{item.imageUrl},
+				#{item.createdAt},
+				#{item.updatedAt},
+			</trim>
+		</foreach>
+		ON DUPLICATE KEY UPDATE
+		<trim suffixOverrides=",">
+			name = VALUES(name),
+			city = VALUES(city),
+			province = VALUES(province),
+			description = VALUES(description),
+			opening_hours = VALUES(opening_hours),
+			address = VALUES(address),
+			rating = VALUES(rating),
+			image_url = VALUES(image_url),
+			created_at = VALUES(created_at),
+			updated_at = VALUES(updated_at),
+		</trim>
+	</insert>
+
+	<!--根据Id查询-->
+	<select id="selectById" resultMap="base_result_map" >
+		SELECT
+		<include refid="base_column_list"/>
+		FROM t_attraction
+		WHERE id = #{id} 
+	</select>
+
+	<!--根据Id删除-->
+	<delete id="deleteById">
+		DELETE FROM t_attraction
+		WHERE id = #{id} 
+	</delete>
+
+	<!--根据Id修改-->
+	<update id="updateById">
+		UPDATE t_attraction
+		<set>
+			<if test="bean.name != null">
+				name = #{bean.name},
+			</if>
+			<if test="bean.city != null">
+				city = #{bean.city},
+			</if>
+			<if test="bean.province != null">
+				province = #{bean.province},
+			</if>
+			<if test="bean.description != null">
+				description = #{bean.description},
+			</if>
+			<if test="bean.openingHours != null">
+				opening_hours = #{bean.openingHours},
+			</if>
+			<if test="bean.address != null">
+				address = #{bean.address},
+			</if>
+			<if test="bean.rating != null">
+				rating = #{bean.rating},
+			</if>
+			<if test="bean.imageUrl != null">
+				image_url = #{bean.imageUrl},
+			</if>
+			<if test="bean.createdAt != null">
+				created_at = #{bean.createdAt},
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at = #{bean.updatedAt},
+			</if>
+		</set>
+		WHERE id = #{id} 
+	</update>
+
+	<!--根据查询条件删除-->
+	<delete id="deleteByParams">
+		DELETE FROM t_attraction
+		<include refid="query_condition"/>
+	</delete>
+
+	<!-- 多表关联查询 -->
+	<select id="selectJoin" resultType="java.util.Map">
+		SELECT
+		${selectColumns}
+		FROM ${joinTables}
+		<if test="joinConditions != null and joinConditions != ''">
+			${joinConditions}
+		</if>
+		<if test="whereConditions != null and whereConditions != ''">
+			WHERE ${whereConditions}
+		</if>
+	</select>
+
+	<!-- 多表关联查询结果总数 -->
+	<select id="selectJoinCount" resultType="java.lang.Long">
+		SELECT COUNT(*) 
+		FROM ${joinTables}
+		<if test="joinConditions != null and joinConditions != ''">
+			${joinConditions}
+		</if>
+		<if test="whereConditions != null and whereConditions != ''">
+			WHERE ${whereConditions}
+		</if>
+	</select>
+
+	<!-- 多表关联分页查询 -->
+	<select id="selectJoinPage" resultType="java.util.Map">
+		SELECT
+		${selectColumns}
+		FROM ${joinTables}
+		<if test="joinConditions != null and joinConditions != ''">
+			${joinConditions}
+		</if>
+		<if test="whereConditions != null and whereConditions != ''">
+			WHERE ${whereConditions}
+		</if>
+		<if test="orderBy != null and orderBy != ''">
+			ORDER BY ${orderBy}
+		</if>
+		<if test="offset != null and limit != null">
+			LIMIT #{offset}, #{limit}
+		</if>
+	</select>
+</mapper>

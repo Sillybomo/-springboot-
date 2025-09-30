@@ -1,0 +1,489 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.PaymentMapper">
+
+	<!-- 实体类与数据库字段映射配置 -->
+	<resultMap id="base_result_map" type="com.entity.po.Payment">
+		<!--  -->
+		<id property="id" column="id" />
+		<!--  -->
+		<result property="orderId" column="order_id" />
+		<!--  -->
+		<result property="paymentNo" column="payment_no" />
+		<!--  -->
+		<result property="paymentMethod" column="payment_method" />
+		<!--  -->
+		<result property="amount" column="amount" />
+		<!--  -->
+		<result property="status" column="status" />
+		<!--  -->
+		<result property="paymentTime" column="payment_time" />
+		<!--  -->
+		<result property="createdAt" column="created_at" />
+		<!--  -->
+		<result property="updatedAt" column="updated_at" />
+	</resultMap>
+
+	<!--通用查询列-->
+	<sql id="base_column_list">
+		id,order_id,payment_no,payment_method,amount,status,payment_time,created_at,updated_at
+	</sql>
+
+	<!--通用查询条件-->
+	<sql id="base_query_condition">
+		<if test="query.id != null">
+			and id = #{query.id}
+		</if>
+		<if test="query.orderId != null">
+			and order_id = #{query.orderId}
+		</if>
+		<if test="query.paymentNo != null and query.paymentNo != ''">
+			and payment_no = #{query.paymentNo}
+		</if>
+		<if test="query.paymentMethod != null and query.paymentMethod != ''">
+			and payment_method = #{query.paymentMethod}
+		</if>
+		<if test="query.amount != null">
+			and amount = #{query.amount}
+		</if>
+		<if test="query.status != null and query.status != ''">
+			and status = #{query.status}
+		</if>
+		<if test="query.paymentTime != null">
+			and payment_time = #{query.paymentTime}
+		</if>
+		<if test="query.createdAt != null">
+			and created_at = #{query.createdAt}
+		</if>
+		<if test="query.updatedAt != null">
+			and updated_at = #{query.updatedAt}
+		</if>
+	</sql>
+
+	<!--扩展查询条件-->
+	<sql id="base_query_condition_extend">
+		<if test="query.paymentNoFuzzy != null and query.paymentNoFuzzy != ''">
+			and payment_no
+			like concat('%',#{query.paymentNoFuzzy},'%')
+		</if>
+		<if test="query.paymentMethodFuzzy != null and query.paymentMethodFuzzy != ''">
+			and payment_method
+			like concat('%',#{query.paymentMethodFuzzy},'%')
+		</if>
+		<if test="query.statusFuzzy != null and query.statusFuzzy != ''">
+			and status
+			like concat('%',#{query.statusFuzzy},'%')
+		</if>
+		<if test="query.paymentTimeStart != null and query.paymentTimeStart != ''">
+			<![CDATA[ and payment_time >= str_to_date(#{query.paymentTimeStart} ,'%Y-%m-%d')]]>
+		</if>
+		<if test="query.paymentTimeEnd != null and query.paymentTimeEnd != ''">
+			<![CDATA[ and payment_time < date_sub(str_to_date(#{query.paymentTimeEnd} ,'%Y-%m-%d'),interval -1 day)]]>
+		</if>
+		<if test="query.createdAtStart != null and query.createdAtStart != ''">
+			<![CDATA[ and created_at >= str_to_date(#{query.createdAtStart} ,'%Y-%m-%d')]]>
+		</if>
+		<if test="query.createdAtEnd != null and query.createdAtEnd != ''">
+			<![CDATA[ and created_at < date_sub(str_to_date(#{query.createdAtEnd} ,'%Y-%m-%d'),interval -1 day)]]>
+		</if>
+		<if test="query.updatedAtStart != null and query.updatedAtStart != ''">
+			<![CDATA[ and updated_at >= str_to_date(#{query.updatedAtStart} ,'%Y-%m-%d')]]>
+		</if>
+		<if test="query.updatedAtEnd != null and query.updatedAtEnd != ''">
+			<![CDATA[ and updated_at < date_sub(str_to_date(#{query.updatedAtEnd} ,'%Y-%m-%d'),interval -1 day)]]>
+		</if>
+	</sql>
+
+	<!--包含通用查询条件-->
+	<sql id="query_condition">
+		<where>
+			<include refid = "base_query_condition"/>
+			<include refid = "base_query_condition_extend"/>
+		</where>
+	</sql>
+
+	<!--查询列表-->
+	<select id="selectByParams" resultMap="base_result_map">
+		select
+		<include refid="base_column_list"/>
+		from t_payment
+		<include refid="query_condition"/>
+		<if test="query.orderBy != null">
+			order by ${query.orderBy}
+		</if>
+		<if test="query.simplePage != null">
+			limit #{query.simplePage.offset},#{query.simplePage.pageSize}
+		</if>
+	</select>
+
+	<!--查询数量-->
+	<select id="selectCountByCollection" resultType="java.lang.Long">
+		select count(1)
+		from t_payment
+		<include refid="query_condition"/>
+	</select>
+
+	<!--插入-->
+	<insert id="insertEntity" parameterType="com.entity.po.Payment" useGeneratedKeys="true">
+		<selectKey keyProperty="bean.id" resultType="Long" order="AFTER">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO t_payment
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.orderId != null">
+				order_id,
+			</if>
+			<if test="bean.paymentNo != null">
+				payment_no,
+			</if>
+			<if test="bean.paymentMethod != null">
+				payment_method,
+			</if>
+			<if test="bean.amount != null">
+				amount,
+			</if>
+			<if test="bean.status != null">
+				status,
+			</if>
+			<if test="bean.paymentTime != null">
+				payment_time,
+			</if>
+			<if test="bean.createdAt != null">
+				created_at,
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at,
+			</if>
+		</trim>
+		VALUES
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.orderId != null">
+				#{bean.orderId},
+			</if>
+			<if test="bean.paymentNo != null">
+				#{bean.paymentNo},
+			</if>
+			<if test="bean.paymentMethod != null">
+				#{bean.paymentMethod},
+			</if>
+			<if test="bean.amount != null">
+				#{bean.amount},
+			</if>
+			<if test="bean.status != null">
+				#{bean.status},
+			</if>
+			<if test="bean.paymentTime != null">
+				#{bean.paymentTime},
+			</if>
+			<if test="bean.createdAt != null">
+				#{bean.createdAt},
+			</if>
+			<if test="bean.updatedAt != null">
+				#{bean.updatedAt},
+			</if>
+		</trim>
+	</insert>
+
+	<!-- 插入或更新(自动处理唯一键冲突) -->
+	<insert id="insertOrUpdate" parameterType="com.entity.po.Payment" useGeneratedKeys="true" >
+		INSERT INTO t_payment
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.id != null">
+				id,
+			</if>
+			<if test="bean.orderId != null">
+				order_id,
+			</if>
+			<if test="bean.paymentNo != null">
+				payment_no,
+			</if>
+			<if test="bean.paymentMethod != null">
+				payment_method,
+			</if>
+			<if test="bean.amount != null">
+				amount,
+			</if>
+			<if test="bean.status != null">
+				status,
+			</if>
+			<if test="bean.paymentTime != null">
+				payment_time,
+			</if>
+			<if test="bean.createdAt != null">
+				created_at,
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at,
+			</if>
+		</trim>
+
+		<trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+			<if test="bean.id != null">
+				#{bean.id},
+			</if>
+			<if test="bean.orderId != null">
+				#{bean.orderId},
+			</if>
+			<if test="bean.paymentNo != null">
+				#{bean.paymentNo},
+			</if>
+			<if test="bean.paymentMethod != null">
+				#{bean.paymentMethod},
+			</if>
+			<if test="bean.amount != null">
+				#{bean.amount},
+			</if>
+			<if test="bean.status != null">
+				#{bean.status},
+			</if>
+			<if test="bean.paymentTime != null">
+				#{bean.paymentTime},
+			</if>
+			<if test="bean.createdAt != null">
+				#{bean.createdAt},
+			</if>
+			<if test="bean.updatedAt != null">
+				#{bean.updatedAt},
+			</if>
+		</trim>
+
+		ON DUPLICATE KEY UPDATE
+		<trim suffixOverrides=",">
+			<if test="bean.orderId != null">
+				order_id = VALUES(order_id),
+			</if>
+			<if test="bean.paymentNo != null">
+				payment_no = VALUES(payment_no),
+			</if>
+			<if test="bean.paymentMethod != null">
+				payment_method = VALUES(payment_method),
+			</if>
+			<if test="bean.amount != null">
+				amount = VALUES(amount),
+			</if>
+			<if test="bean.status != null">
+				status = VALUES(status),
+			</if>
+			<if test="bean.paymentTime != null">
+				payment_time = VALUES(payment_time),
+			</if>
+			<if test="bean.createdAt != null">
+				created_at = VALUES(created_at),
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at = VALUES(updated_at),
+			</if>
+		</trim>
+	</insert>
+
+	<!-- 批量插入（推荐单批次数据量控制在500条以内） -->
+	<insert id="insertBatch" parameterType="com.entity.po.Payment">
+		INSERT INTO t_payment
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			order_id,	<!--  -->
+			payment_no,	<!--  -->
+			payment_method,	<!--  -->
+			amount,	<!--  -->
+			status,	<!--  -->
+			payment_time,	<!--  -->
+			created_at,	<!--  -->
+			updated_at,	<!--  -->
+		</trim>
+		VALUES
+		<foreach collection="list" item="item" separator=",">
+			<trim prefix="(" suffix=")" suffixOverrides=",">
+				#{item.orderId},
+				#{item.paymentNo},
+				#{item.paymentMethod},
+				#{item.amount},
+				#{item.status},
+				#{item.paymentTime},
+				#{item.createdAt},
+				#{item.updatedAt},
+			</trim>
+		</foreach>
+	</insert>
+
+	<!-- 批量插入或修改（推荐单批次数据量控制在500条以内） -->
+	<insert id="insertOrUpdateBatch" parameterType="com.entity.po.Payment">
+		INSERT INTO t_payment
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			id,	<!--  -->
+			order_id,	<!--  -->
+			payment_no,	<!--  -->
+			payment_method,	<!--  -->
+			amount,	<!--  -->
+			status,	<!--  -->
+			payment_time,	<!--  -->
+			created_at,	<!--  -->
+			updated_at,	<!--  -->
+		</trim>
+		VALUES
+		<foreach collection="list" item="item" separator=",">
+			<trim prefix="(" suffix=")" suffixOverrides=",">
+				#{item.id},
+				#{item.orderId},
+				#{item.paymentNo},
+				#{item.paymentMethod},
+				#{item.amount},
+				#{item.status},
+				#{item.paymentTime},
+				#{item.createdAt},
+				#{item.updatedAt},
+			</trim>
+		</foreach>
+		ON DUPLICATE KEY UPDATE
+		<trim suffixOverrides=",">
+			order_id = VALUES(order_id),
+			payment_no = VALUES(payment_no),
+			payment_method = VALUES(payment_method),
+			amount = VALUES(amount),
+			status = VALUES(status),
+			payment_time = VALUES(payment_time),
+			created_at = VALUES(created_at),
+			updated_at = VALUES(updated_at),
+		</trim>
+	</insert>
+
+	<!--根据Id查询-->
+	<select id="selectById" resultMap="base_result_map" >
+		SELECT
+		<include refid="base_column_list"/>
+		FROM t_payment
+		WHERE id = #{id} 
+	</select>
+
+	<!--根据Id删除-->
+	<delete id="deleteById">
+		DELETE FROM t_payment
+		WHERE id = #{id} 
+	</delete>
+
+	<!--根据Id修改-->
+	<update id="updateById">
+		UPDATE t_payment
+		<set>
+			<if test="bean.orderId != null">
+				order_id = #{bean.orderId},
+			</if>
+			<if test="bean.paymentNo != null">
+				payment_no = #{bean.paymentNo},
+			</if>
+			<if test="bean.paymentMethod != null">
+				payment_method = #{bean.paymentMethod},
+			</if>
+			<if test="bean.amount != null">
+				amount = #{bean.amount},
+			</if>
+			<if test="bean.status != null">
+				status = #{bean.status},
+			</if>
+			<if test="bean.paymentTime != null">
+				payment_time = #{bean.paymentTime},
+			</if>
+			<if test="bean.createdAt != null">
+				created_at = #{bean.createdAt},
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at = #{bean.updatedAt},
+			</if>
+		</set>
+		WHERE id = #{id} 
+	</update>
+
+	<!--根据OrderId查询-->
+	<select id="selectByOrderId" resultMap="base_result_map" >
+		SELECT
+		<include refid="base_column_list"/>
+		FROM t_payment
+		WHERE order_id = #{orderId} 
+	</select>
+
+	<!--根据OrderId删除-->
+	<delete id="deleteByOrderId">
+		DELETE FROM t_payment
+		WHERE order_id = #{orderId} 
+	</delete>
+
+	<!--根据OrderId修改-->
+	<update id="updateByOrderId">
+		UPDATE t_payment
+		<set>
+			<if test="bean.id != null">
+				id = #{bean.id},
+			</if>
+			<if test="bean.paymentNo != null">
+				payment_no = #{bean.paymentNo},
+			</if>
+			<if test="bean.paymentMethod != null">
+				payment_method = #{bean.paymentMethod},
+			</if>
+			<if test="bean.amount != null">
+				amount = #{bean.amount},
+			</if>
+			<if test="bean.status != null">
+				status = #{bean.status},
+			</if>
+			<if test="bean.paymentTime != null">
+				payment_time = #{bean.paymentTime},
+			</if>
+			<if test="bean.createdAt != null">
+				created_at = #{bean.createdAt},
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at = #{bean.updatedAt},
+			</if>
+		</set>
+		WHERE order_id = #{orderId} 
+	</update>
+
+	<!--根据查询条件删除-->
+	<delete id="deleteByParams">
+		DELETE FROM t_payment
+		<include refid="query_condition"/>
+	</delete>
+
+	<!-- 多表关联查询 -->
+	<select id="selectJoin" resultType="java.util.Map">
+		SELECT
+		${selectColumns}
+		FROM ${joinTables}
+		<if test="joinConditions != null and joinConditions != ''">
+			${joinConditions}
+		</if>
+		<if test="whereConditions != null and whereConditions != ''">
+			WHERE ${whereConditions}
+		</if>
+	</select>
+
+	<!-- 多表关联查询结果总数 -->
+	<select id="selectJoinCount" resultType="java.lang.Long">
+		SELECT COUNT(*) 
+		FROM ${joinTables}
+		<if test="joinConditions != null and joinConditions != ''">
+			${joinConditions}
+		</if>
+		<if test="whereConditions != null and whereConditions != ''">
+			WHERE ${whereConditions}
+		</if>
+	</select>
+
+	<!-- 多表关联分页查询 -->
+	<select id="selectJoinPage" resultType="java.util.Map">
+		SELECT
+		${selectColumns}
+		FROM ${joinTables}
+		<if test="joinConditions != null and joinConditions != ''">
+			${joinConditions}
+		</if>
+		<if test="whereConditions != null and whereConditions != ''">
+			WHERE ${whereConditions}
+		</if>
+		<if test="orderBy != null and orderBy != ''">
+			ORDER BY ${orderBy}
+		</if>
+		<if test="offset != null and limit != null">
+			LIMIT #{offset}, #{limit}
+		</if>
+	</select>
+</mapper>

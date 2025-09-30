@@ -1,0 +1,467 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.TicketMapper">
+
+	<!-- 实体类与数据库字段映射配置 -->
+	<resultMap id="base_result_map" type="com.entity.po.Ticket">
+		<!--  -->
+		<id property="id" column="id" />
+		<!--  -->
+		<result property="attractionId" column="attraction_id" />
+		<!--  -->
+		<result property="ticketType" column="ticket_type" />
+		<!--  -->
+		<result property="price" column="price" />
+		<!--  -->
+		<result property="discountPrice" column="discount_price" />
+		<!--  -->
+		<result property="validDays" column="valid_days" />
+		<!--  -->
+		<result property="description" column="description" />
+		<!--  -->
+		<result property="stock" column="stock" />
+		<!--  -->
+		<result property="createdAt" column="created_at" />
+		<!--  -->
+		<result property="updatedAt" column="updated_at" />
+	</resultMap>
+
+	<!--通用查询列-->
+	<sql id="base_column_list">
+		id,attraction_id,ticket_type,price,discount_price,valid_days,description,stock,created_at,updated_at
+	</sql>
+
+	<!--通用查询条件-->
+	<sql id="base_query_condition">
+		<if test="query.id != null">
+			and id = #{query.id}
+		</if>
+		<if test="query.attractionId != null">
+			and attraction_id = #{query.attractionId}
+		</if>
+		<if test="query.ticketType != null and query.ticketType != ''">
+			and ticket_type = #{query.ticketType}
+		</if>
+		<if test="query.price != null">
+			and price = #{query.price}
+		</if>
+		<if test="query.discountPrice != null">
+			and discount_price = #{query.discountPrice}
+		</if>
+		<if test="query.validDays != null">
+			and valid_days = #{query.validDays}
+		</if>
+		<if test="query.description != null and query.description != ''">
+			and description = #{query.description}
+		</if>
+		<if test="query.stock != null">
+			and stock = #{query.stock}
+		</if>
+		<if test="query.createdAt != null">
+			and created_at = #{query.createdAt}
+		</if>
+		<if test="query.updatedAt != null">
+			and updated_at = #{query.updatedAt}
+		</if>
+	</sql>
+
+	<!--扩展查询条件-->
+	<sql id="base_query_condition_extend">
+		<if test="query.ticketTypeFuzzy != null and query.ticketTypeFuzzy != ''">
+			and ticket_type
+			like concat('%',#{query.ticketTypeFuzzy},'%')
+		</if>
+		<if test="query.descriptionFuzzy != null and query.descriptionFuzzy != ''">
+			and description
+			like concat('%',#{query.descriptionFuzzy},'%')
+		</if>
+		<if test="query.createdAtStart != null and query.createdAtStart != ''">
+			<![CDATA[ and created_at >= str_to_date(#{query.createdAtStart} ,'%Y-%m-%d')]]>
+		</if>
+		<if test="query.createdAtEnd != null and query.createdAtEnd != ''">
+			<![CDATA[ and created_at < date_sub(str_to_date(#{query.createdAtEnd} ,'%Y-%m-%d'),interval -1 day)]]>
+		</if>
+		<if test="query.updatedAtStart != null and query.updatedAtStart != ''">
+			<![CDATA[ and updated_at >= str_to_date(#{query.updatedAtStart} ,'%Y-%m-%d')]]>
+		</if>
+		<if test="query.updatedAtEnd != null and query.updatedAtEnd != ''">
+			<![CDATA[ and updated_at < date_sub(str_to_date(#{query.updatedAtEnd} ,'%Y-%m-%d'),interval -1 day)]]>
+		</if>
+	</sql>
+
+	<!--包含通用查询条件-->
+	<sql id="query_condition">
+		<where>
+			<include refid = "base_query_condition"/>
+			<include refid = "base_query_condition_extend"/>
+		</where>
+	</sql>
+
+	<!--查询列表-->
+	<select id="selectByParams" resultMap="base_result_map">
+		select
+		<include refid="base_column_list"/>
+		from t_ticket
+		<include refid="query_condition"/>
+		<if test="query.orderBy != null">
+			order by ${query.orderBy}
+		</if>
+		<if test="query.simplePage != null">
+			limit #{query.simplePage.offset},#{query.simplePage.pageSize}
+		</if>
+	</select>
+
+	<!--查询数量-->
+	<select id="selectCountByCollection" resultType="java.lang.Long">
+		select count(1)
+		from t_ticket
+		<include refid="query_condition"/>
+	</select>
+
+	<!--插入-->
+	<insert id="insertEntity" parameterType="com.entity.po.Ticket" useGeneratedKeys="true">
+		<selectKey keyProperty="bean.id" resultType="Long" order="AFTER">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO t_ticket
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.attractionId != null">
+				attraction_id,
+			</if>
+			<if test="bean.ticketType != null">
+				ticket_type,
+			</if>
+			<if test="bean.price != null">
+				price,
+			</if>
+			<if test="bean.discountPrice != null">
+				discount_price,
+			</if>
+			<if test="bean.validDays != null">
+				valid_days,
+			</if>
+			<if test="bean.description != null">
+				description,
+			</if>
+			<if test="bean.stock != null">
+				stock,
+			</if>
+			<if test="bean.createdAt != null">
+				created_at,
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at,
+			</if>
+		</trim>
+		VALUES
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.attractionId != null">
+				#{bean.attractionId},
+			</if>
+			<if test="bean.ticketType != null">
+				#{bean.ticketType},
+			</if>
+			<if test="bean.price != null">
+				#{bean.price},
+			</if>
+			<if test="bean.discountPrice != null">
+				#{bean.discountPrice},
+			</if>
+			<if test="bean.validDays != null">
+				#{bean.validDays},
+			</if>
+			<if test="bean.description != null">
+				#{bean.description},
+			</if>
+			<if test="bean.stock != null">
+				#{bean.stock},
+			</if>
+			<if test="bean.createdAt != null">
+				#{bean.createdAt},
+			</if>
+			<if test="bean.updatedAt != null">
+				#{bean.updatedAt},
+			</if>
+		</trim>
+	</insert>
+
+	<!-- 插入或更新(自动处理唯一键冲突) -->
+	<insert id="insertOrUpdate" parameterType="com.entity.po.Ticket" useGeneratedKeys="true" >
+		INSERT INTO t_ticket
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.id != null">
+				id,
+			</if>
+			<if test="bean.attractionId != null">
+				attraction_id,
+			</if>
+			<if test="bean.ticketType != null">
+				ticket_type,
+			</if>
+			<if test="bean.price != null">
+				price,
+			</if>
+			<if test="bean.discountPrice != null">
+				discount_price,
+			</if>
+			<if test="bean.validDays != null">
+				valid_days,
+			</if>
+			<if test="bean.description != null">
+				description,
+			</if>
+			<if test="bean.stock != null">
+				stock,
+			</if>
+			<if test="bean.createdAt != null">
+				created_at,
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at,
+			</if>
+		</trim>
+
+		<trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+			<if test="bean.id != null">
+				#{bean.id},
+			</if>
+			<if test="bean.attractionId != null">
+				#{bean.attractionId},
+			</if>
+			<if test="bean.ticketType != null">
+				#{bean.ticketType},
+			</if>
+			<if test="bean.price != null">
+				#{bean.price},
+			</if>
+			<if test="bean.discountPrice != null">
+				#{bean.discountPrice},
+			</if>
+			<if test="bean.validDays != null">
+				#{bean.validDays},
+			</if>
+			<if test="bean.description != null">
+				#{bean.description},
+			</if>
+			<if test="bean.stock != null">
+				#{bean.stock},
+			</if>
+			<if test="bean.createdAt != null">
+				#{bean.createdAt},
+			</if>
+			<if test="bean.updatedAt != null">
+				#{bean.updatedAt},
+			</if>
+		</trim>
+
+		ON DUPLICATE KEY UPDATE
+		<trim suffixOverrides=",">
+			<if test="bean.attractionId != null">
+				attraction_id = VALUES(attraction_id),
+			</if>
+			<if test="bean.ticketType != null">
+				ticket_type = VALUES(ticket_type),
+			</if>
+			<if test="bean.price != null">
+				price = VALUES(price),
+			</if>
+			<if test="bean.discountPrice != null">
+				discount_price = VALUES(discount_price),
+			</if>
+			<if test="bean.validDays != null">
+				valid_days = VALUES(valid_days),
+			</if>
+			<if test="bean.description != null">
+				description = VALUES(description),
+			</if>
+			<if test="bean.stock != null">
+				stock = VALUES(stock),
+			</if>
+			<if test="bean.createdAt != null">
+				created_at = VALUES(created_at),
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at = VALUES(updated_at),
+			</if>
+		</trim>
+	</insert>
+
+	<!-- 批量插入（推荐单批次数据量控制在500条以内） -->
+	<insert id="insertBatch" parameterType="com.entity.po.Ticket">
+		INSERT INTO t_ticket
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			attraction_id,	<!--  -->
+			ticket_type,	<!--  -->
+			price,	<!--  -->
+			discount_price,	<!--  -->
+			valid_days,	<!--  -->
+			description,	<!--  -->
+			stock,	<!--  -->
+			created_at,	<!--  -->
+			updated_at,	<!--  -->
+		</trim>
+		VALUES
+		<foreach collection="list" item="item" separator=",">
+			<trim prefix="(" suffix=")" suffixOverrides=",">
+				#{item.attractionId},
+				#{item.ticketType},
+				#{item.price},
+				#{item.discountPrice},
+				#{item.validDays},
+				#{item.description},
+				#{item.stock},
+				#{item.createdAt},
+				#{item.updatedAt},
+			</trim>
+		</foreach>
+	</insert>
+
+	<!-- 批量插入或修改（推荐单批次数据量控制在500条以内） -->
+	<insert id="insertOrUpdateBatch" parameterType="com.entity.po.Ticket">
+		INSERT INTO t_ticket
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			id,	<!--  -->
+			attraction_id,	<!--  -->
+			ticket_type,	<!--  -->
+			price,	<!--  -->
+			discount_price,	<!--  -->
+			valid_days,	<!--  -->
+			description,	<!--  -->
+			stock,	<!--  -->
+			created_at,	<!--  -->
+			updated_at,	<!--  -->
+		</trim>
+		VALUES
+		<foreach collection="list" item="item" separator=",">
+			<trim prefix="(" suffix=")" suffixOverrides=",">
+				#{item.id},
+				#{item.attractionId},
+				#{item.ticketType},
+				#{item.price},
+				#{item.discountPrice},
+				#{item.validDays},
+				#{item.description},
+				#{item.stock},
+				#{item.createdAt},
+				#{item.updatedAt},
+			</trim>
+		</foreach>
+		ON DUPLICATE KEY UPDATE
+		<trim suffixOverrides=",">
+			attraction_id = VALUES(attraction_id),
+			ticket_type = VALUES(ticket_type),
+			price = VALUES(price),
+			discount_price = VALUES(discount_price),
+			valid_days = VALUES(valid_days),
+			description = VALUES(description),
+			stock = VALUES(stock),
+			created_at = VALUES(created_at),
+			updated_at = VALUES(updated_at),
+		</trim>
+	</insert>
+
+	<!--根据Id查询-->
+	<select id="selectById" resultMap="base_result_map" >
+		SELECT
+		<include refid="base_column_list"/>
+		FROM t_ticket
+		WHERE id = #{id} 
+	</select>
+
+	<!--根据Id删除-->
+	<delete id="deleteById">
+		DELETE FROM t_ticket
+		WHERE id = #{id} 
+	</delete>
+
+	<!--根据Id修改-->
+	<update id="updateById">
+		UPDATE t_ticket
+		<set>
+			<if test="bean.attractionId != null">
+				attraction_id = #{bean.attractionId},
+			</if>
+			<if test="bean.ticketType != null">
+				ticket_type = #{bean.ticketType},
+			</if>
+			<if test="bean.price != null">
+				price = #{bean.price},
+			</if>
+			<if test="bean.discountPrice != null">
+				discount_price = #{bean.discountPrice},
+			</if>
+			<if test="bean.validDays != null">
+				valid_days = #{bean.validDays},
+			</if>
+			<if test="bean.description != null">
+				description = #{bean.description},
+			</if>
+			<if test="bean.stock != null">
+				stock = #{bean.stock},
+			</if>
+			<if test="bean.createdAt != null">
+				created_at = #{bean.createdAt},
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at = #{bean.updatedAt},
+			</if>
+		</set>
+		WHERE id = #{id} 
+	</update>
+
+	<!--根据attractionId删除-->
+	<delete id="deleteByAttractionId">
+		DELETE FROM t_ticket
+		 WHERE attraction_id = #{attractionId}
+	</delete>
+
+	<!--根据查询条件删除-->
+	<delete id="deleteByParams">
+		DELETE FROM t_ticket
+		<include refid="query_condition"/>
+	</delete>
+
+	<!-- 多表关联查询 -->
+	<select id="selectJoin" resultType="java.util.Map">
+		SELECT
+		${selectColumns}
+		FROM ${joinTables}
+		<if test="joinConditions != null and joinConditions != ''">
+			${joinConditions}
+		</if>
+		<if test="whereConditions != null and whereConditions != ''">
+			WHERE ${whereConditions}
+		</if>
+	</select>
+
+	<!-- 多表关联查询结果总数 -->
+	<select id="selectJoinCount" resultType="java.lang.Long">
+		SELECT COUNT(*) 
+		FROM ${joinTables}
+		<if test="joinConditions != null and joinConditions != ''">
+			${joinConditions}
+		</if>
+		<if test="whereConditions != null and whereConditions != ''">
+			WHERE ${whereConditions}
+		</if>
+	</select>
+
+	<!-- 多表关联分页查询 -->
+	<select id="selectJoinPage" resultType="java.util.Map">
+		SELECT
+		${selectColumns}
+		FROM ${joinTables}
+		<if test="joinConditions != null and joinConditions != ''">
+			${joinConditions}
+		</if>
+		<if test="whereConditions != null and whereConditions != ''">
+			WHERE ${whereConditions}
+		</if>
+		<if test="orderBy != null and orderBy != ''">
+			ORDER BY ${orderBy}
+		</if>
+		<if test="offset != null and limit != null">
+			LIMIT #{offset}, #{limit}
+		</if>
+	</select>
+</mapper>

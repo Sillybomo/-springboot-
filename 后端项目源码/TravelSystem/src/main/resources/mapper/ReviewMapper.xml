@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.ReviewMapper">
+
+	<!-- 实体类与数据库字段映射配置 -->
+	<resultMap id="base_result_map" type="com.entity.po.Review">
+		<!--  -->
+		<id property="id" column="id" />
+		<!--  -->
+		<result property="attractionId" column="attraction_id" />
+		<!--  -->
+		<result property="userId" column="user_id" />
+		<!--  -->
+		<result property="orderId" column="order_id" />
+		<!--  -->
+		<result property="rating" column="rating" />
+		<!--  -->
+		<result property="comment" column="comment" />
+		<!--  -->
+		<result property="createdAt" column="created_at" />
+		<!--  -->
+		<result property="updatedAt" column="updated_at" />
+	</resultMap>
+
+	<!--通用查询列-->
+	<sql id="base_column_list">
+		id,attraction_id,user_id,order_id,rating,comment,created_at,updated_at
+	</sql>
+
+	<!--通用查询条件-->
+	<sql id="base_query_condition">
+		<if test="query.id != null">
+			and id = #{query.id}
+		</if>
+		<if test="query.attractionId != null">
+			and attraction_id = #{query.attractionId}
+		</if>
+		<if test="query.userId != null">
+			and user_id = #{query.userId}
+		</if>
+		<if test="query.orderId != null">
+			and order_id = #{query.orderId}
+		</if>
+		<if test="query.rating != null">
+			and rating = #{query.rating}
+		</if>
+		<if test="query.comment != null and query.comment != ''">
+			and comment = #{query.comment}
+		</if>
+		<if test="query.createdAt != null">
+			and created_at = #{query.createdAt}
+		</if>
+		<if test="query.updatedAt != null">
+			and updated_at = #{query.updatedAt}
+		</if>
+	</sql>
+
+	<!--扩展查询条件-->
+	<sql id="base_query_condition_extend">
+		<if test="query.commentFuzzy != null and query.commentFuzzy != ''">
+			and comment
+			like concat('%',#{query.commentFuzzy},'%')
+		</if>
+		<if test="query.createdAtStart != null and query.createdAtStart != ''">
+			<![CDATA[ and created_at >= str_to_date(#{query.createdAtStart} ,'%Y-%m-%d')]]>
+		</if>
+		<if test="query.createdAtEnd != null and query.createdAtEnd != ''">
+			<![CDATA[ and created_at < date_sub(str_to_date(#{query.createdAtEnd} ,'%Y-%m-%d'),interval -1 day)]]>
+		</if>
+		<if test="query.updatedAtStart != null and query.updatedAtStart != ''">
+			<![CDATA[ and updated_at >= str_to_date(#{query.updatedAtStart} ,'%Y-%m-%d')]]>
+		</if>
+		<if test="query.updatedAtEnd != null and query.updatedAtEnd != ''">
+			<![CDATA[ and updated_at < date_sub(str_to_date(#{query.updatedAtEnd} ,'%Y-%m-%d'),interval -1 day)]]>
+		</if>
+	</sql>
+
+	<!--包含通用查询条件-->
+	<sql id="query_condition">
+		<where>
+			<include refid = "base_query_condition"/>
+			<include refid = "base_query_condition_extend"/>
+		</where>
+	</sql>
+
+	<!--查询列表-->
+	<select id="selectByParams" resultMap="base_result_map">
+		select
+		<include refid="base_column_list"/>
+		from t_review
+		<include refid="query_condition"/>
+		<if test="query.orderBy != null">
+			order by ${query.orderBy}
+		</if>
+		<if test="query.simplePage != null">
+			limit #{query.simplePage.offset},#{query.simplePage.pageSize}
+		</if>
+	</select>
+
+	<!--查询数量-->
+	<select id="selectCountByCollection" resultType="java.lang.Long">
+		select count(1)
+		from t_review
+		<include refid="query_condition"/>
+	</select>
+
+	<!--插入-->
+	<insert id="insertEntity" parameterType="com.entity.po.Review" useGeneratedKeys="true">
+		<selectKey keyProperty="bean.id" resultType="Long" order="AFTER">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO t_review
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.attractionId != null">
+				attraction_id,
+			</if>
+			<if test="bean.userId != null">
+				user_id,
+			</if>
+			<if test="bean.orderId != null">
+				order_id,
+			</if>
+			<if test="bean.rating != null">
+				rating,
+			</if>
+			<if test="bean.comment != null">
+				comment,
+			</if>
+			<if test="bean.createdAt != null">
+				created_at,
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at,
+			</if>
+		</trim>
+		VALUES
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.attractionId != null">
+				#{bean.attractionId},
+			</if>
+			<if test="bean.userId != null">
+				#{bean.userId},
+			</if>
+			<if test="bean.orderId != null">
+				#{bean.orderId},
+			</if>
+			<if test="bean.rating != null">
+				#{bean.rating},
+			</if>
+			<if test="bean.comment != null">
+				#{bean.comment},
+			</if>
+			<if test="bean.createdAt != null">
+				#{bean.createdAt},
+			</if>
+			<if test="bean.updatedAt != null">
+				#{bean.updatedAt},
+			</if>
+		</trim>
+	</insert>
+
+	<!-- 插入或更新(自动处理唯一键冲突) -->
+	<insert id="insertOrUpdate" parameterType="com.entity.po.Review" useGeneratedKeys="true" >
+		INSERT INTO t_review
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.id != null">
+				id,
+			</if>
+			<if test="bean.attractionId != null">
+				attraction_id,
+			</if>
+			<if test="bean.userId != null">
+				user_id,
+			</if>
+			<if test="bean.orderId != null">
+				order_id,
+			</if>
+			<if test="bean.rating != null">
+				rating,
+			</if>
+			<if test="bean.comment != null">
+				comment,
+			</if>
+			<if test="bean.createdAt != null">
+				created_at,
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at,
+			</if>
+		</trim>
+
+		<trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+			<if test="bean.id != null">
+				#{bean.id},
+			</if>
+			<if test="bean.attractionId != null">
+				#{bean.attractionId},
+			</if>
+			<if test="bean.userId != null">
+				#{bean.userId},
+			</if>
+			<if test="bean.orderId != null">
+				#{bean.orderId},
+			</if>
+			<if test="bean.rating != null">
+				#{bean.rating},
+			</if>
+			<if test="bean.comment != null">
+				#{bean.comment},
+			</if>
+			<if test="bean.createdAt != null">
+				#{bean.createdAt},
+			</if>
+			<if test="bean.updatedAt != null">
+				#{bean.updatedAt},
+			</if>
+		</trim>
+
+		ON DUPLICATE KEY UPDATE
+		<trim suffixOverrides=",">
+			<if test="bean.attractionId != null">
+				attraction_id = VALUES(attraction_id),
+			</if>
+			<if test="bean.userId != null">
+				user_id = VALUES(user_id),
+			</if>
+			<if test="bean.orderId != null">
+				order_id = VALUES(order_id),
+			</if>
+			<if test="bean.rating != null">
+				rating = VALUES(rating),
+			</if>
+			<if test="bean.comment != null">
+				comment = VALUES(comment),
+			</if>
+			<if test="bean.createdAt != null">
+				created_at = VALUES(created_at),
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at = VALUES(updated_at),
+			</if>
+		</trim>
+	</insert>
+
+	<!-- 批量插入（推荐单批次数据量控制在500条以内） -->
+	<insert id="insertBatch" parameterType="com.entity.po.Review">
+		INSERT INTO t_review
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			attraction_id,	<!--  -->
+			user_id,	<!--  -->
+			order_id,	<!--  -->
+			rating,	<!--  -->
+			comment,	<!--  -->
+			created_at,	<!--  -->
+			updated_at,	<!--  -->
+		</trim>
+		VALUES
+		<foreach collection="list" item="item" separator=",">
+			<trim prefix="(" suffix=")" suffixOverrides=",">
+				#{item.attractionId},
+				#{item.userId},
+				#{item.orderId},
+				#{item.rating},
+				#{item.comment},
+				#{item.createdAt},
+				#{item.updatedAt},
+			</trim>
+		</foreach>
+	</insert>
+
+	<!-- 批量插入或修改（推荐单批次数据量控制在500条以内） -->
+	<insert id="insertOrUpdateBatch" parameterType="com.entity.po.Review">
+		INSERT INTO t_review
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			id,	<!--  -->
+			attraction_id,	<!--  -->
+			user_id,	<!--  -->
+			order_id,	<!--  -->
+			rating,	<!--  -->
+			comment,	<!--  -->
+			created_at,	<!--  -->
+			updated_at,	<!--  -->
+		</trim>
+		VALUES
+		<foreach collection="list" item="item" separator=",">
+			<trim prefix="(" suffix=")" suffixOverrides=",">
+				#{item.id},
+				#{item.attractionId},
+				#{item.userId},
+				#{item.orderId},
+				#{item.rating},
+				#{item.comment},
+				#{item.createdAt},
+				#{item.updatedAt},
+			</trim>
+		</foreach>
+		ON DUPLICATE KEY UPDATE
+		<trim suffixOverrides=",">
+			attraction_id = VALUES(attraction_id),
+			user_id = VALUES(user_id),
+			order_id = VALUES(order_id),
+			rating = VALUES(rating),
+			comment = VALUES(comment),
+			created_at = VALUES(created_at),
+			updated_at = VALUES(updated_at),
+		</trim>
+	</insert>
+
+	<!--根据Id查询-->
+	<select id="selectById" resultMap="base_result_map" >
+		SELECT
+		<include refid="base_column_list"/>
+		FROM t_review
+		WHERE id = #{id} 
+	</select>
+
+	<!--根据Id删除-->
+	<delete id="deleteById">
+		DELETE FROM t_review
+		WHERE id = #{id} 
+	</delete>
+
+	<!--根据Id修改-->
+	<update id="updateById">
+		UPDATE t_review
+		<set>
+			<if test="bean.attractionId != null">
+				attraction_id = #{bean.attractionId},
+			</if>
+			<if test="bean.userId != null">
+				user_id = #{bean.userId},
+			</if>
+			<if test="bean.orderId != null">
+				order_id = #{bean.orderId},
+			</if>
+			<if test="bean.rating != null">
+				rating = #{bean.rating},
+			</if>
+			<if test="bean.comment != null">
+				comment = #{bean.comment},
+			</if>
+			<if test="bean.createdAt != null">
+				created_at = #{bean.createdAt},
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at = #{bean.updatedAt},
+			</if>
+		</set>
+		WHERE id = #{id} 
+	</update>
+
+	<!--根据attractionId删除-->
+	<delete id="deleteByAttractionId">
+		DELETE FROM t_review
+		 WHERE attraction_id = #{attractionId}
+	</delete>
+
+	<!--根据userId删除-->
+	<delete id="deleteByUserId">
+		DELETE FROM t_review
+		 WHERE user_id = #{userId}
+	</delete>
+
+	<!--根据orderId删除-->
+	<delete id="deleteByOrderId">
+		DELETE FROM t_review
+		 WHERE order_id = #{orderId}
+	</delete>
+
+	<!--根据查询条件删除-->
+	<delete id="deleteByParams">
+		DELETE FROM t_review
+		<include refid="query_condition"/>
+	</delete>
+
+	<!-- 多表关联查询 -->
+	<select id="selectJoin" resultType="java.util.Map">
+		SELECT
+		${selectColumns}
+		FROM ${joinTables}
+		<if test="joinConditions != null and joinConditions != ''">
+			${joinConditions}
+		</if>
+		<if test="whereConditions != null and whereConditions != ''">
+			WHERE ${whereConditions}
+		</if>
+	</select>
+
+	<!-- 多表关联查询结果总数 -->
+	<select id="selectJoinCount" resultType="java.lang.Long">
+		SELECT COUNT(*) 
+		FROM ${joinTables}
+		<if test="joinConditions != null and joinConditions != ''">
+			${joinConditions}
+		</if>
+		<if test="whereConditions != null and whereConditions != ''">
+			WHERE ${whereConditions}
+		</if>
+	</select>
+
+	<!-- 多表关联分页查询 -->
+	<select id="selectJoinPage" resultType="java.util.Map">
+		SELECT
+		${selectColumns}
+		FROM ${joinTables}
+		<if test="joinConditions != null and joinConditions != ''">
+			${joinConditions}
+		</if>
+		<if test="whereConditions != null and whereConditions != ''">
+			WHERE ${whereConditions}
+		</if>
+		<if test="orderBy != null and orderBy != ''">
+			ORDER BY ${orderBy}
+		</if>
+		<if test="offset != null and limit != null">
+			LIMIT #{offset}, #{limit}
+		</if>
+	</select>
+</mapper>

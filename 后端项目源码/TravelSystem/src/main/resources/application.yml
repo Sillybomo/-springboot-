@@ -1,0 +1,82 @@
+server:
+  port: 8888
+file:
+  upload:
+    path: D:/Study/Courses/AI/vue-travel-system/static/img/
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.data.redis: DEBUG
+    org.springframework.cache: DEBUG
+    root: info
+
+spring:
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+  ai:
+    ollama:
+      #配置ollama中deepseek的访问地址
+      base-url: http://localhost:11434
+      chat:
+        model: deepseek-r1:1.5b
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      database: 0
+      timeout: 10000
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1
+          max-idle: 8
+          min-idle: 0
+  datasource:  # 数据源配置
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/travel?useUnicode=true&characterEncoding=UTF8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      min-idle: 5
+      max-active: 10
+      max-wait: 3000
+  jackson:
+    time-zone: Asia/Shanghai
+    date-format: yyyy-MM-dd HH:mm:ss
+  application:
+    name: ch03-mybatis-plus-demo
+  thymeleaf:
+    cache: false
+  messages:
+    basename: i18n/messages
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 20MB
+  web:
+    resources:
+      cache:
+        period: 0
+  mail:
+    host: smtp.163.com
+    port: 465
+    username: l1493795880@163.com
+    password: UHepT7hyZuwMtFc4
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.ssl.enable: true
+      mail.smtp.ssl.trust: smtp.163.com
+      mail.smtp.socketFactory.class: javax.net.ssl.SSLSocketFactory
+
+mybatis-plus:
+  global-config:
+    db-config:
+      id-type: auto
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

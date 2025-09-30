@@ -1,0 +1,630 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.OrderMapper">
+
+	<!-- 实体类与数据库字段映射配置 -->
+	<resultMap id="base_result_map" type="com.entity.po.Order">
+		<!--  -->
+		<id property="id" column="id" />
+		<!--  -->
+		<result property="orderNo" column="order_no" />
+		<!--  -->
+		<result property="userId" column="user_id" />
+		<!--  -->
+		<result property="ticketId" column="ticket_id" />
+		<!--  -->
+		<result property="quantity" column="quantity" />
+		<!--  -->
+		<result property="totalAmount" column="total_amount" />
+		<!--  -->
+		<result property="status" column="status" />
+		<!--  -->
+		<result property="visitDate" column="visit_date" />
+		<!--  -->
+		<result property="contactName" column="contact_name" />
+		<!--  -->
+		<result property="contactPhone" column="contact_phone" />
+		<!--  -->
+		<result property="createdAt" column="created_at" />
+		<!--  -->
+		<result property="updatedAt" column="updated_at" />
+		<!-- 订单备注 -->
+		<result property="remark" column="remark" />
+	</resultMap>
+
+	<!--通用查询列-->
+	<sql id="base_column_list">
+		id,order_no,user_id,ticket_id,quantity,total_amount,status,visit_date,contact_name,contact_phone,created_at,updated_at,remark
+	</sql>
+
+	<!--通用查询条件-->
+	<sql id="base_query_condition">
+		<if test="query.id != null">
+			and id = #{query.id}
+		</if>
+		<if test="query.orderNo != null and query.orderNo != ''">
+			and order_no = #{query.orderNo}
+		</if>
+		<if test="query.userId != null">
+			and user_id = #{query.userId}
+		</if>
+		<if test="query.ticketId != null">
+			and ticket_id = #{query.ticketId}
+		</if>
+		<if test="query.quantity != null">
+			and quantity = #{query.quantity}
+		</if>
+		<if test="query.totalAmount != null">
+			and total_amount = #{query.totalAmount}
+		</if>
+		<if test="query.status != null and query.status != ''">
+			and status = #{query.status}
+		</if>
+		<if test="query.visitDate != null">
+			and visit_date = #{query.visitDate}
+		</if>
+		<if test="query.contactName != null and query.contactName != ''">
+			and contact_name = #{query.contactName}
+		</if>
+		<if test="query.contactPhone != null and query.contactPhone != ''">
+			and contact_phone = #{query.contactPhone}
+		</if>
+		<if test="query.createdAt != null">
+			and created_at = #{query.createdAt}
+		</if>
+		<if test="query.updatedAt != null">
+			and updated_at = #{query.updatedAt}
+		</if>
+		<if test="query.remark != null and query.remark != ''">
+			and remark = #{query.remark}
+		</if>
+	</sql>
+
+	<!--扩展查询条件-->
+	<sql id="base_query_condition_extend">
+		<if test="query.orderNoFuzzy != null and query.orderNoFuzzy != ''">
+			and order_no
+			like concat('%',#{query.orderNoFuzzy},'%')
+		</if>
+		<if test="query.statusFuzzy != null and query.statusFuzzy != ''">
+			and status
+			like concat('%',#{query.statusFuzzy},'%')
+		</if>
+		<if test="query.visitDateStart != null and query.visitDateStart != ''">
+			<![CDATA[ and visit_date >= str_to_date(#{query.visitDateStart} ,'%Y-%m-%d')]]>
+		</if>
+		<if test="query.visitDateEnd != null and query.visitDateEnd != ''">
+			<![CDATA[ and visit_date < date_sub(str_to_date(#{query.visitDateEnd} ,'%Y-%m-%d'),interval -1 day)]]>
+		</if>
+		<if test="query.contactNameFuzzy != null and query.contactNameFuzzy != ''">
+			and contact_name
+			like concat('%',#{query.contactNameFuzzy},'%')
+		</if>
+		<if test="query.contactPhoneFuzzy != null and query.contactPhoneFuzzy != ''">
+			and contact_phone
+			like concat('%',#{query.contactPhoneFuzzy},'%')
+		</if>
+		<if test="query.createdAtStart != null and query.createdAtStart != ''">
+			<![CDATA[ and created_at >= str_to_date(#{query.createdAtStart} ,'%Y-%m-%d')]]>
+		</if>
+		<if test="query.createdAtEnd != null and query.createdAtEnd != ''">
+			<![CDATA[ and created_at < date_sub(str_to_date(#{query.createdAtEnd} ,'%Y-%m-%d'),interval -1 day)]]>
+		</if>
+		<if test="query.updatedAtStart != null and query.updatedAtStart != ''">
+			<![CDATA[ and updated_at >= str_to_date(#{query.updatedAtStart} ,'%Y-%m-%d')]]>
+		</if>
+		<if test="query.updatedAtEnd != null and query.updatedAtEnd != ''">
+			<![CDATA[ and updated_at < date_sub(str_to_date(#{query.updatedAtEnd} ,'%Y-%m-%d'),interval -1 day)]]>
+		</if>
+		<if test="query.remarkFuzzy != null and query.remarkFuzzy != ''">
+			and remark
+			like concat('%',#{query.remarkFuzzy},'%')
+		</if>
+	</sql>
+
+	<!--包含通用查询条件-->
+	<sql id="query_condition">
+		<where>
+			<include refid = "base_query_condition"/>
+			<include refid = "base_query_condition_extend"/>
+		</where>
+	</sql>
+
+	<!--查询列表-->
+	<select id="selectByParams" resultMap="base_result_map">
+		select
+		<include refid="base_column_list"/>
+		from t_order
+		<include refid="query_condition"/>
+		<if test="query.orderBy != null">
+			order by ${query.orderBy}
+		</if>
+		<if test="query.simplePage != null">
+			limit #{query.simplePage.offset},#{query.simplePage.pageSize}
+		</if>
+	</select>
+
+	<!--查询数量-->
+	<select id="selectCountByCollection" resultType="java.lang.Long">
+		select count(1)
+		from t_order
+		<include refid="query_condition"/>
+	</select>
+
+	<!--插入-->
+	<insert id="insertEntity" parameterType="com.entity.po.Order" useGeneratedKeys="true">
+		<selectKey keyProperty="bean.id" resultType="Long" order="AFTER">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO t_order
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.orderNo != null">
+				order_no,
+			</if>
+			<if test="bean.userId != null">
+				user_id,
+			</if>
+			<if test="bean.ticketId != null">
+				ticket_id,
+			</if>
+			<if test="bean.quantity != null">
+				quantity,
+			</if>
+			<if test="bean.totalAmount != null">
+				total_amount,
+			</if>
+			<if test="bean.status != null">
+				status,
+			</if>
+			<if test="bean.visitDate != null">
+				visit_date,
+			</if>
+			<if test="bean.contactName != null">
+				contact_name,
+			</if>
+			<if test="bean.contactPhone != null">
+				contact_phone,
+			</if>
+			<if test="bean.createdAt != null">
+				created_at,
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at,
+			</if>
+			<if test="bean.remark != null">
+				remark,
+			</if>
+		</trim>
+		VALUES
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.orderNo != null">
+				#{bean.orderNo},
+			</if>
+			<if test="bean.userId != null">
+				#{bean.userId},
+			</if>
+			<if test="bean.ticketId != null">
+				#{bean.ticketId},
+			</if>
+			<if test="bean.quantity != null">
+				#{bean.quantity},
+			</if>
+			<if test="bean.totalAmount != null">
+				#{bean.totalAmount},
+			</if>
+			<if test="bean.status != null">
+				#{bean.status},
+			</if>
+			<if test="bean.visitDate != null">
+				#{bean.visitDate},
+			</if>
+			<if test="bean.contactName != null">
+				#{bean.contactName},
+			</if>
+			<if test="bean.contactPhone != null">
+				#{bean.contactPhone},
+			</if>
+			<if test="bean.createdAt != null">
+				#{bean.createdAt},
+			</if>
+			<if test="bean.updatedAt != null">
+				#{bean.updatedAt},
+			</if>
+			<if test="bean.remark != null">
+				#{bean.remark},
+			</if>
+		</trim>
+	</insert>
+
+	<!-- 插入或更新(自动处理唯一键冲突) -->
+	<insert id="insertOrUpdate" parameterType="com.entity.po.Order" useGeneratedKeys="true" >
+		INSERT INTO t_order
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.id != null">
+				id,
+			</if>
+			<if test="bean.orderNo != null">
+				order_no,
+			</if>
+			<if test="bean.userId != null">
+				user_id,
+			</if>
+			<if test="bean.ticketId != null">
+				ticket_id,
+			</if>
+			<if test="bean.quantity != null">
+				quantity,
+			</if>
+			<if test="bean.totalAmount != null">
+				total_amount,
+			</if>
+			<if test="bean.status != null">
+				status,
+			</if>
+			<if test="bean.visitDate != null">
+				visit_date,
+			</if>
+			<if test="bean.contactName != null">
+				contact_name,
+			</if>
+			<if test="bean.contactPhone != null">
+				contact_phone,
+			</if>
+			<if test="bean.createdAt != null">
+				created_at,
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at,
+			</if>
+			<if test="bean.remark != null">
+				remark,
+			</if>
+		</trim>
+
+		<trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+			<if test="bean.id != null">
+				#{bean.id},
+			</if>
+			<if test="bean.orderNo != null">
+				#{bean.orderNo},
+			</if>
+			<if test="bean.userId != null">
+				#{bean.userId},
+			</if>
+			<if test="bean.ticketId != null">
+				#{bean.ticketId},
+			</if>
+			<if test="bean.quantity != null">
+				#{bean.quantity},
+			</if>
+			<if test="bean.totalAmount != null">
+				#{bean.totalAmount},
+			</if>
+			<if test="bean.status != null">
+				#{bean.status},
+			</if>
+			<if test="bean.visitDate != null">
+				#{bean.visitDate},
+			</if>
+			<if test="bean.contactName != null">
+				#{bean.contactName},
+			</if>
+			<if test="bean.contactPhone != null">
+				#{bean.contactPhone},
+			</if>
+			<if test="bean.createdAt != null">
+				#{bean.createdAt},
+			</if>
+			<if test="bean.updatedAt != null">
+				#{bean.updatedAt},
+			</if>
+			<if test="bean.remark != null">
+				#{bean.remark},
+			</if>
+		</trim>
+
+		ON DUPLICATE KEY UPDATE
+		<trim suffixOverrides=",">
+			<if test="bean.orderNo != null">
+				order_no = VALUES(order_no),
+			</if>
+			<if test="bean.userId != null">
+				user_id = VALUES(user_id),
+			</if>
+			<if test="bean.ticketId != null">
+				ticket_id = VALUES(ticket_id),
+			</if>
+			<if test="bean.quantity != null">
+				quantity = VALUES(quantity),
+			</if>
+			<if test="bean.totalAmount != null">
+				total_amount = VALUES(total_amount),
+			</if>
+			<if test="bean.status != null">
+				status = VALUES(status),
+			</if>
+			<if test="bean.visitDate != null">
+				visit_date = VALUES(visit_date),
+			</if>
+			<if test="bean.contactName != null">
+				contact_name = VALUES(contact_name),
+			</if>
+			<if test="bean.contactPhone != null">
+				contact_phone = VALUES(contact_phone),
+			</if>
+			<if test="bean.createdAt != null">
+				created_at = VALUES(created_at),
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at = VALUES(updated_at),
+			</if>
+			<if test="bean.remark != null">
+				remark = VALUES(remark),
+			</if>
+		</trim>
+	</insert>
+
+	<!-- 批量插入（推荐单批次数据量控制在500条以内） -->
+	<insert id="insertBatch" parameterType="com.entity.po.Order">
+		INSERT INTO t_order
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			order_no,	<!--  -->
+			user_id,	<!--  -->
+			ticket_id,	<!--  -->
+			quantity,	<!--  -->
+			total_amount,	<!--  -->
+			status,	<!--  -->
+			visit_date,	<!--  -->
+			contact_name,	<!--  -->
+			contact_phone,	<!--  -->
+			created_at,	<!--  -->
+			updated_at,	<!--  -->
+			remark,	<!-- 订单备注 -->
+		</trim>
+		VALUES
+		<foreach collection="list" item="item" separator=",">
+			<trim prefix="(" suffix=")" suffixOverrides=",">
+				#{item.orderNo},
+				#{item.userId},
+				#{item.ticketId},
+				#{item.quantity},
+				#{item.totalAmount},
+				#{item.status},
+				#{item.visitDate},
+				#{item.contactName},
+				#{item.contactPhone},
+				#{item.createdAt},
+				#{item.updatedAt},
+				#{item.remark},
+			</trim>
+		</foreach>
+	</insert>
+
+	<!-- 批量插入或修改（推荐单批次数据量控制在500条以内） -->
+	<insert id="insertOrUpdateBatch" parameterType="com.entity.po.Order">
+		INSERT INTO t_order
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			id,	<!--  -->
+			order_no,	<!--  -->
+			user_id,	<!--  -->
+			ticket_id,	<!--  -->
+			quantity,	<!--  -->
+			total_amount,	<!--  -->
+			status,	<!--  -->
+			visit_date,	<!--  -->
+			contact_name,	<!--  -->
+			contact_phone,	<!--  -->
+			created_at,	<!--  -->
+			updated_at,	<!--  -->
+			remark,	<!-- 订单备注 -->
+		</trim>
+		VALUES
+		<foreach collection="list" item="item" separator=",">
+			<trim prefix="(" suffix=")" suffixOverrides=",">
+				#{item.id},
+				#{item.orderNo},
+				#{item.userId},
+				#{item.ticketId},
+				#{item.quantity},
+				#{item.totalAmount},
+				#{item.status},
+				#{item.visitDate},
+				#{item.contactName},
+				#{item.contactPhone},
+				#{item.createdAt},
+				#{item.updatedAt},
+				#{item.remark},
+			</trim>
+		</foreach>
+		ON DUPLICATE KEY UPDATE
+		<trim suffixOverrides=",">
+			order_no = VALUES(order_no),
+			user_id = VALUES(user_id),
+			ticket_id = VALUES(ticket_id),
+			quantity = VALUES(quantity),
+			total_amount = VALUES(total_amount),
+			status = VALUES(status),
+			visit_date = VALUES(visit_date),
+			contact_name = VALUES(contact_name),
+			contact_phone = VALUES(contact_phone),
+			created_at = VALUES(created_at),
+			updated_at = VALUES(updated_at),
+			remark = VALUES(remark),
+		</trim>
+	</insert>
+
+	<!--根据Id查询-->
+	<select id="selectById" resultMap="base_result_map" >
+		SELECT
+		<include refid="base_column_list"/>
+		FROM t_order
+		WHERE id = #{id} 
+	</select>
+
+	<!--根据Id删除-->
+	<delete id="deleteById">
+		DELETE FROM t_order
+		WHERE id = #{id} 
+	</delete>
+
+	<!--根据Id修改-->
+	<update id="updateById">
+		UPDATE t_order
+		<set>
+			<if test="bean.orderNo != null">
+				order_no = #{bean.orderNo},
+			</if>
+			<if test="bean.userId != null">
+				user_id = #{bean.userId},
+			</if>
+			<if test="bean.ticketId != null">
+				ticket_id = #{bean.ticketId},
+			</if>
+			<if test="bean.quantity != null">
+				quantity = #{bean.quantity},
+			</if>
+			<if test="bean.totalAmount != null">
+				total_amount = #{bean.totalAmount},
+			</if>
+			<if test="bean.status != null">
+				status = #{bean.status},
+			</if>
+			<if test="bean.visitDate != null">
+				visit_date = #{bean.visitDate},
+			</if>
+			<if test="bean.contactName != null">
+				contact_name = #{bean.contactName},
+			</if>
+			<if test="bean.contactPhone != null">
+				contact_phone = #{bean.contactPhone},
+			</if>
+			<if test="bean.createdAt != null">
+				created_at = #{bean.createdAt},
+			</if>
+			<if test="bean.updatedAt != null">
+				updated_at = #{bean.updatedAt},
+			</if>
+			<if test="bean.remark != null">
+				remark = #{bean.remark},
+			</if>
+		</set>
+		WHERE id = #{id} 
+	</update>
+
+	<!--根据userId删除-->
+	<delete id="deleteByUserId">
+		DELETE FROM t_order
+		 WHERE user_id = #{userId}
+	</delete>
+
+	<!--根据ticketId删除-->
+	<delete id="deleteByTicketId">
+		DELETE FROM t_order
+		 WHERE ticket_id = #{ticketId}
+	</delete>
+
+	<!--根据查询条件删除-->
+	<delete id="deleteByParams">
+		DELETE FROM t_order
+		<include refid="query_condition"/>
+	</delete>
+
+	<!-- 多表关联查询 -->
+	<select id="selectJoin" resultType="java.util.Map">
+		SELECT
+		${selectColumns}
+		FROM ${joinTables}
+		<if test="joinConditions != null and joinConditions != ''">
+			${joinConditions}
+		</if>
+		<if test="whereConditions != null and whereConditions != ''">
+			WHERE ${whereConditions}
+		</if>
+	</select>
+
+	<!-- 多表关联查询结果总数 -->
+	<select id="selectJoinCount" resultType="java.lang.Long">
+		SELECT COUNT(*) 
+		FROM ${joinTables}
+		<if test="joinConditions != null and joinConditions != ''">
+			${joinConditions}
+		</if>
+		<if test="whereConditions != null and whereConditions != ''">
+			WHERE ${whereConditions}
+		</if>
+	</select>
+
+	<!-- 多表关联分页查询 -->
+	<select id="selectJoinPage" resultType="java.util.Map">
+		SELECT
+		${selectColumns}
+		FROM ${joinTables}
+		<if test="joinConditions != null and joinConditions != ''">
+			${joinConditions}
+		</if>
+		<if test="whereConditions != null and whereConditions != ''">
+			WHERE ${whereConditions}
+		</if>
+		<if test="orderBy != null and orderBy != ''">
+			ORDER BY ${orderBy}
+		</if>
+		<if test="offset != null and limit != null">
+			LIMIT #{offset}, #{limit}
+		</if>
+	</select>
+
+	<!-- 多表联查获取订单列表（包含景点和门票信息） -->
+	<select id="selectOrderWithAttractionAndTicket" resultType="java.util.Map">
+		SELECT
+			o.id,
+			o.order_no as orderNo,
+			o.user_id as userId,
+			o.ticket_id as ticketId,
+			o.quantity,
+			o.total_amount as totalAmount,
+			o.status,
+			o.contact_name as contactName,
+			o.contact_phone as contactPhone,
+			o.visit_date as visitDate,
+			o.remark,
+			o.created_at as createdAt,
+			o.updated_at as updatedAt,
+			a.id as attractionId,
+			a.name as attractionName,
+			a.image_url as attractionImageUrl,
+			a.city as attractionCity,
+			a.province as attractionProvince,
+			a.rating as attractionRating,
+			a.description as attractionDescription,
+			t.ticket_type as ticketType,
+			t.price as ticketPrice,
+			t.discount_price as ticketDiscountPrice,
+			t.description as ticketDescription,
+			t.stock as ticketStock
+		FROM t_order o
+		LEFT JOIN t_ticket t ON o.ticket_id = t.id
+		LEFT JOIN t_attraction a ON t.attraction_id = a.id
+		<where>
+			<if test="param.userId != null">
+				AND o.user_id = #{param.userId}
+			</if>
+			<if test="param.orderNo != null and param.orderNo != ''">
+				AND o.order_no LIKE CONCAT('%', #{param.orderNo}, '%')
+			</if>
+			<if test="param.status != null and param.status != ''">
+				AND o.status = #{param.status}
+			</if>
+			<if test="param.contactName != null and param.contactName != ''">
+				AND o.contact_name LIKE CONCAT('%', #{param.contactName}, '%')
+			</if>
+			<if test="param.startTime != null and param.startTime != ''">
+				AND o.created_at >= #{param.startTime}
+			</if>
+			<if test="param.endTime != null and param.endTime != ''">
+				AND o.created_at &lt;= #{param.endTime}
+			</if>
+		</where>
+		ORDER BY o.created_at DESC
+	</select>
+
+</mapper>
